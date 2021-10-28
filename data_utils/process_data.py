@@ -27,7 +27,7 @@ if __name__ == '__main__':
     K_POINTS = 480      # 240
     # NB_NEIGHBORS = 5
     # STD_RATIO = 4.0
-    VOXEL_SIZE = 0.315
+    VOXEL_SIZE = 0.3
 
     # print('Reading point cloud from Velodyne file')
     # count = 1
@@ -51,7 +51,6 @@ if __name__ == '__main__':
     # print('Finished parsing data!!!')
 
     # read the newly-parsed point cloud data
-    print("Start processing data!")
     for file in glob.glob(os.path.join(SAVED_DIR, 'pcd_*.txt')):  
         pcd = o3d.io.read_point_cloud(file, format='pts')
         # o3d.visualization.draw_geometries([pcd])
@@ -67,10 +66,6 @@ if __name__ == '__main__':
 
         write_xyzrgb(SAVED_DIR, file_name[:-4] + '_ds.txt', voxel_down_pcd.points, voxel_down_pcd.colors)
         write_pcd_xyzrgb(SAVED_DIR, file_name[:-4] + '_ds.pcd', voxel_down_pcd.points, voxel_down_pcd.colors)
-
-
-
-
 
         # print(f'Performing Uniform DownSampling every {K_POINTS}-th points')
         # uni_down_pcd = pcd.uniform_down_sample(every_k_points=K_POINTS)

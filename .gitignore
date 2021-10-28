@@ -3,3 +3,4 @@ data/
 semantic-segmentation-editor/
 transform/
 __pycache__/
+*.sh
