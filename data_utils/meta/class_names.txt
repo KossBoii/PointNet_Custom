@@ -1,0 +1,4 @@
+road
+building
+tree
+car
