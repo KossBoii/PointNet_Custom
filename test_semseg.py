@@ -72,12 +72,14 @@ def main(args):
     BATCH_SIZE = args.batch_size
     NUM_POINT = args.num_point
 
-    root = 'data/sight_distance'
+    # root = 'data/sight_distance'
+    root = 'data/s3dis/stanford_indoor3d/'
 
     TEST_DATASET_WHOLE_SCENE = ScannetDatasetWholeScene(root, split='test', test_area=args.test_area, block_points=NUM_POINT)
     log_string("The number of test data is: %d" % len(TEST_DATASET_WHOLE_SCENE))
 
     '''MODEL LOADING'''
+    log_string('MODEL LOADING ...')
     model_name = os.listdir(experiment_dir + '/logs')[0].split('.')[0]
     MODEL = importlib.import_module(model_name)
     classifier = MODEL.get_model(NUM_CLASSES).cuda()
@@ -97,7 +99,7 @@ def main(args):
         log_string('---- EVALUATION WHOLE SCENE----')
 
         for batch_idx in range(num_batches):
-            print("Inference [%d/%d] %s ..." % (batch_idx + 1, num_batches, scene_id[batch_idx]))
+            log_string("Inference [%d/%d] %s ..." % (batch_idx + 1, num_batches, scene_id[batch_idx]))
             total_seen_class_tmp = [0 for _ in range(NUM_CLASSES)]
             total_correct_class_tmp = [0 for _ in range(NUM_CLASSES)]
             total_iou_deno_class_tmp = [0 for _ in range(NUM_CLASSES)]
@@ -108,16 +110,23 @@ def main(args):
             whole_scene_data = TEST_DATASET_WHOLE_SCENE.scene_points_list[batch_idx]
             whole_scene_label = TEST_DATASET_WHOLE_SCENE.semantic_labels_list[batch_idx]
             vote_label_pool = np.zeros((whole_scene_label.shape[0], NUM_CLASSES))
+
+            log_string("Checkpoint 1")
+            print(args.num_votes)
             for _ in tqdm(range(args.num_votes), total=args.num_votes):
+            # for _ in range(args.num_votes):
+                log_string("Checkpoint 1.25")
                 scene_data, scene_label, scene_smpw, scene_point_index = TEST_DATASET_WHOLE_SCENE[batch_idx]
                 num_blocks = scene_data.shape[0]
                 s_batch_num = (num_blocks + BATCH_SIZE - 1) // BATCH_SIZE
                 batch_data = np.zeros((BATCH_SIZE, NUM_POINT, 9))
 
+                log_string("Checkpoint 1.5")
                 batch_label = np.zeros((BATCH_SIZE, NUM_POINT))
                 batch_point_index = np.zeros((BATCH_SIZE, NUM_POINT))
                 batch_smpw = np.zeros((BATCH_SIZE, NUM_POINT))
 
+                log_string(s_batch_num)
                 for sbatch in range(s_batch_num):
                     start_idx = sbatch * BATCH_SIZE
                     end_idx = min((sbatch + 1) * BATCH_SIZE, num_blocks)
@@ -140,6 +149,7 @@ def main(args):
 
             pred_label = np.argmax(vote_label_pool, 1)
 
+            log_string("Checkpoint 2")
             for l in range(NUM_CLASSES):
                 total_seen_class_tmp[l] += np.sum((whole_scene_label == l))
                 total_correct_class_tmp[l] += np.sum((pred_label == l) & (whole_scene_label == l))
@@ -149,11 +159,11 @@ def main(args):
                 total_iou_deno_class[l] += total_iou_deno_class_tmp[l]
 
             iou_map = np.array(total_correct_class_tmp) / (np.array(total_iou_deno_class_tmp, dtype=np.float) + 1e-6)
-            print(iou_map)
+            log_string(iou_map)
             arr = np.array(total_seen_class_tmp)
             tmp_iou = np.mean(iou_map[arr != 0])
             log_string('Mean IoU of %s: %.4f' % (scene_id[batch_idx], tmp_iou))
-            print('----------------------------')
+            log_string('----------------------------')
 
             filename = os.path.join(visual_dir, scene_id[batch_idx] + '.txt')
             with open(filename, 'w') as pl_save:
@@ -188,7 +198,7 @@ def main(args):
         log_string('eval whole scene point accuracy: %f' % (
                 np.sum(total_correct_class) / float(np.sum(total_seen_class) + 1e-6)))
 
-        print("Done!")
+        log_string("Done!")
 
 
 if __name__ == '__main__':

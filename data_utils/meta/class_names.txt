@@ -1,4 +1,5 @@
+void
 road
+car
 building
 tree
-car

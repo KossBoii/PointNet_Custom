@@ -101,10 +101,16 @@ class ScannetDatasetWholeScene():
         self.stride = stride
         self.scene_points_num = []
         assert split in ['train', 'test']
+        
         if self.split == 'train':
-            self.file_list = [d for d in os.listdir(root) if d.find('Street%d' % test_area) is -1]
+            self.file_list = [d for d in os.listdir(root) if d.find('Area_%d' % test_area) is -1]
         else:
-            self.file_list = [d for d in os.listdir(root) if d.find('Street%d' % test_area) is not -1]
+            self.file_list = [d for d in os.listdir(root) if d.find('Area_%d' % test_area) is not -1]
+
+        # if self.split == 'train':
+        #     self.file_list = [d for d in os.listdir(root) if d.find('Street%d' % test_area) is -1]
+        # else:
+        #     self.file_list = [d for d in os.listdir(root) if d.find('Street%d' % test_area) is not -1]
         self.scene_points_list = []
         self.semantic_labels_list = []
         self.room_coord_min, self.room_coord_max = [], []

@@ -13,7 +13,8 @@ g_class2color = {
     'road': [0,255,0],
     'building': [0,0,255],
     'tree': [0,255,255],
-    'car': [255,255,0]
+    'car': [255,255,0],
+    'void': [50,50,50]
 }
 g_easy_view_labels = []
 g_label2color = {g_classes.index(cls): g_class2color[cls] for cls in g_classes}
@@ -23,23 +24,12 @@ import glob
 # CONVERT ORIGINAL DATA TO OUR DATA_LABEL FILES
 # -----------------------------------------------------------------------------
 def collect_point_label(anno_path, out_filename, file_format='txt'):
-    """ Convert original dataset files to data_label file (each line is XYZRGBL).
-        We aggregated all the points from each instance in the room.
-    Args:
-        anno_path: path to annotations. e.g. Area_1/office_2/Annotations/
-        out_filename: path to save collected points and labels (each line is XYZRGBL)
-        file_format: txt or numpy, determines what file format to save.
-    Returns:
-        None
-    Note:
-        the points are shifted before save, the most negative point is now at origin.
-    """
     points_list = []
     for f in glob.glob(os.path.join(anno_path, '*.txt')):
         cls = os.path.basename(f).split('_')[0]
         print(f)
-        if cls not in g_classes: # note: in some room there is 'staris' class..
-            cls = 'clutter'
+        if cls not in g_classes:
+            cls = 'void'
 
         points = np.loadtxt(f)
         labels = np.ones((points.shape[0],1)) * g_class2id[cls]
